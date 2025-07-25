@@ -173,7 +173,15 @@ Thumbs.db
 # Project specific
 output_test.pdb
 test_outputs/
-conversion_demo_outputs/ 
+conversion_demo_outputs/
+test_cli_output/
+test_batch_input/
+test_batch_output/
+single_conversion_output/
+batch_numpy_output/
+batch_torch_output/
+class_test_output/
+test_structures/ 
 
 **/*.pdb
 **/*.cif
