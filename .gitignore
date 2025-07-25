@@ -174,3 +174,12 @@ Thumbs.db
 output_test.pdb
 test_outputs/
 conversion_demo_outputs/ 
+
+**/*.pdb
+**/*.cif
+**/*.npz
+**/*.pt
+**/*.npy
+**/*.pt
+**/*.npz
+**/*.npy

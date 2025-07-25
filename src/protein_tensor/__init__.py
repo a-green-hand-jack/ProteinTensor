@@ -12,6 +12,7 @@ __email__ = "your.email@example.com"
 from .core import ProteinTensor
 from .io import load_structure, save_structure
 from .utils import get_atom_features, get_residue_features
+from .batch_converter import BatchConverter, convert_structures
 
 __all__ = [
     "ProteinTensor",
@@ -19,4 +20,6 @@ __all__ = [
     "save_structure",
     "get_atom_features",
     "get_residue_features",
+    "BatchConverter",
+    "convert_structures",
 ] 
