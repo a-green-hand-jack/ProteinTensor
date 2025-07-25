@@ -165,15 +165,15 @@ class TestIO:
             protein_from_pdb = load_structure(pdb_file)
             logger.info(f"Loaded PDB: {protein_from_pdb.n_atoms} atoms, {protein_from_pdb.n_residues} residues")
             
-            # Convert to numpy and save as PDB
+            # Convert to numpy and save as PDB (without original structure)
             numpy_data = protein_from_pdb.to_numpy()
             pdb_from_numpy = ProteinTensor(
                 coordinates=numpy_data['coordinates'],
                 atom_types=numpy_data['atom_types'],
                 residue_types=numpy_data['residue_types'],
                 chain_ids=numpy_data['chain_ids'],
-                residue_numbers=numpy_data['residue_numbers'],
-                structure=protein_from_pdb._structure
+                residue_numbers=numpy_data['residue_numbers']
+                # Intentionally NOT passing structure to test tensor->structure conversion
             )
             pdb_output_path = output_dir / "from_pdb_via_numpy.pdb"
             save_structure(pdb_from_numpy, pdb_output_path)
@@ -187,8 +187,8 @@ class TestIO:
                     atom_types=torch_data['atom_types'],
                     residue_types=torch_data['residue_types'],
                     chain_ids=torch_data['chain_ids'],
-                    residue_numbers=torch_data['residue_numbers'],
-                    structure=protein_from_pdb._structure
+                    residue_numbers=torch_data['residue_numbers']
+                    # Intentionally NOT passing structure to test tensor->structure conversion
                 )
                 cif_output_path = output_dir / "from_pdb_via_torch.cif"
                 save_structure(pdb_from_torch, cif_output_path)
@@ -223,8 +223,8 @@ class TestIO:
                 atom_types=numpy_data_cif['atom_types'],
                 residue_types=numpy_data_cif['residue_types'],
                 chain_ids=numpy_data_cif['chain_ids'],
-                residue_numbers=numpy_data_cif['residue_numbers'],
-                structure=protein_from_cif._structure
+                residue_numbers=numpy_data_cif['residue_numbers']
+                # Intentionally NOT passing structure to test tensor->structure conversion
             )
             pdb_from_cif_path = output_dir / "from_cif_via_numpy.pdb"
             save_structure(cif_from_numpy, pdb_from_cif_path)
@@ -238,8 +238,8 @@ class TestIO:
                     atom_types=torch_data_cif['atom_types'],
                     residue_types=torch_data_cif['residue_types'],
                     chain_ids=torch_data_cif['chain_ids'],
-                    residue_numbers=torch_data_cif['residue_numbers'],
-                    structure=protein_from_cif._structure
+                    residue_numbers=torch_data_cif['residue_numbers']
+                    # Intentionally NOT passing structure to test tensor->structure conversion
                 )
                 cif_from_cif_path = output_dir / "from_cif_via_torch.cif"
                 save_structure(cif_from_torch, cif_from_cif_path)

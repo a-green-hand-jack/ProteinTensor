@@ -42,14 +42,14 @@ def demonstrate_conversion_workflow():
         logger.info(f"   - 坐标形状: {numpy_data['coordinates'].shape}")
         logger.info(f"   - 原子类型: {numpy_data['atom_types'].shape}")
         
-        # 3. 从numpy创建新的ProteinTensor并保存为PDB
+        # 3. 从numpy创建新的ProteinTensor并保存为PDB (不使用原始结构)
         pdb_from_numpy = ProteinTensor(
             coordinates=numpy_data['coordinates'],
             atom_types=numpy_data['atom_types'],
             residue_types=numpy_data['residue_types'],
             chain_ids=numpy_data['chain_ids'],
-            residue_numbers=numpy_data['residue_numbers'],
-            structure=protein._structure
+            residue_numbers=numpy_data['residue_numbers']
+            # 不传入原始结构，测试从张量重建结构
         )
         
         pdb_output = output_dir / "pdb_via_numpy.pdb"
@@ -67,8 +67,8 @@ def demonstrate_conversion_workflow():
                 atom_types=torch_data['atom_types'],
                 residue_types=torch_data['residue_types'],
                 chain_ids=torch_data['chain_ids'],
-                residue_numbers=torch_data['residue_numbers'],
-                structure=protein._structure
+                residue_numbers=torch_data['residue_numbers']
+                # 不传入原始结构，测试从张量重建结构
             )
             
             cif_output = output_dir / "pdb_via_torch.cif"
@@ -96,8 +96,8 @@ def demonstrate_conversion_workflow():
             atom_types=numpy_data_cif['atom_types'],
             residue_types=numpy_data_cif['residue_types'],
             chain_ids=numpy_data_cif['chain_ids'],
-            residue_numbers=numpy_data_cif['residue_numbers'],
-            structure=protein_cif._structure
+            residue_numbers=numpy_data_cif['residue_numbers']
+            # 不传入原始结构，测试从张量重建结构
         )
         
         pdb_from_cif = output_dir / "cif_via_numpy.pdb"
@@ -113,8 +113,8 @@ def demonstrate_conversion_workflow():
                 atom_types=torch_data_cif['atom_types'],
                 residue_types=torch_data_cif['residue_types'],
                 chain_ids=torch_data_cif['chain_ids'],
-                residue_numbers=torch_data_cif['residue_numbers'],
-                structure=protein_cif._structure
+                residue_numbers=torch_data_cif['residue_numbers']
+                # 不传入原始结构，测试从张量重建结构
             )
             
             cif_from_cif = output_dir / "cif_via_torch.cif"

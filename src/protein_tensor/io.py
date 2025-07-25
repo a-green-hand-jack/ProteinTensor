@@ -176,36 +176,102 @@ def _structure_to_tensor(structure: Structure) -> ProteinTensor:
 
 def _tensor_to_structure(protein_tensor: ProteinTensor) -> Structure:
     """
-    Convert ProteinTensor back to BioPython Structure.
+    Convert ProteinTensor back to BioPython Structure from tensor data.
     
     Args:
         protein_tensor: ProteinTensor object
         
     Returns:
-        BioPython Structure object
+        BioPython Structure object rebuilt from tensor data
     """
-    # This is a placeholder implementation
-    # In practice, this would require reverse mapping from indices to names
-    # and proper structure building
-    logger.warning("_tensor_to_structure not fully implemented")
-    
-    if protein_tensor._structure is not None:
-        return protein_tensor._structure
-    
-    # Create a minimal structure for now
     from Bio.PDB.Structure import Structure
     from Bio.PDB.Model import Model
     from Bio.PDB.Chain import Chain
     from Bio.PDB.Residue import Residue
     from Bio.PDB.Atom import Atom
     
-    structure = Structure('converted')
+    if protein_tensor.coordinates is None:
+        raise ValueError("No coordinates available to build structure")
+    
+    logger.info("Rebuilding structure from tensor data")
+    
+    # Get numpy arrays from tensor data
+    coords = protein_tensor._tensor_to_numpy(protein_tensor.coordinates)
+    atom_types = protein_tensor._tensor_to_numpy(protein_tensor.atom_types) if protein_tensor.atom_types is not None else None
+    residue_types = protein_tensor._tensor_to_numpy(protein_tensor.residue_types) if protein_tensor.residue_types is not None else None
+    chain_ids = protein_tensor._tensor_to_numpy(protein_tensor.chain_ids) if protein_tensor.chain_ids is not None else None
+    residue_numbers = protein_tensor._tensor_to_numpy(protein_tensor.residue_numbers) if protein_tensor.residue_numbers is not None else None
+    
+    # Create reverse mappings
+    from .utils import ATOM_INDEX_MAP, RESIDUE_INDEX_MAP
+    
+    # Create new structure
+    structure = Structure('rebuilt_from_tensor')
     model = Model(0)
-    chain = Chain('A')
-    
-    # This is a very basic implementation
-    # Would need proper atom/residue name mapping
     structure.add(model)
-    model.add(chain)
     
+    # Group atoms by chain and residue
+    current_chain_id = None
+    current_residue_num = None
+    current_chain = None
+    current_residue = None
+    atom_serial = 1
+    
+    for i in range(len(coords)):
+        # Get chain ID
+        if chain_ids is not None:
+            chain_id_idx = int(chain_ids[i])
+            chain_id_str = chr(ord('A') + chain_id_idx) if chain_id_idx < 26 else f"A{chain_id_idx}"
+        else:
+            chain_id_str = 'A'
+        
+        # Get residue number
+        if residue_numbers is not None:
+            res_num = int(residue_numbers[i])
+        else:
+            res_num = 1
+        
+        # Create new chain if needed
+        if current_chain_id != chain_id_str:
+            current_chain = Chain(chain_id_str)
+            model.add(current_chain)
+            current_chain_id = chain_id_str
+            current_residue_num = None
+        
+        # Create new residue if needed
+        if current_residue_num != res_num:
+            # Get residue name from index
+            if residue_types is not None:
+                res_type_idx = int(residue_types[i])
+                res_name = RESIDUE_INDEX_MAP.get(res_type_idx, 'UNK')
+            else:
+                res_name = 'UNK'
+            
+            current_residue = Residue((' ', res_num, ' '), res_name, ' ')
+            current_chain.add(current_residue)
+            current_residue_num = res_num
+        
+        # Get atom name from index
+        if atom_types is not None:
+            atom_type_idx = int(atom_types[i])
+            atom_name = ATOM_INDEX_MAP.get(atom_type_idx, 'X')
+        else:
+            atom_name = 'CA'  # Default to CA
+        
+        # Create atom
+        coord = coords[i].astype(float)
+        atom = Atom(
+            name=atom_name,
+            coord=coord,
+            bfactor=0.0,
+            occupancy=1.0,
+            altloc=' ',
+            fullname=f" {atom_name:<3}",
+            serial_number=atom_serial
+        )
+        
+        current_residue.add(atom)
+        atom_serial += 1
+    
+    logger.info(f"Rebuilt structure with {len(coords)} atoms")
     return structure 
