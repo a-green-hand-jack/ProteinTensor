@@ -171,4 +171,5 @@ Thumbs.db
 *~
 
 # Project specific
-output_test.pdb 
+output_test.pdb
+test_outputs/ 

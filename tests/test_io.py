@@ -146,5 +146,134 @@ class TestIO:
         logger.info(f"ProteinTensor properties: {repr_str}")
 
 
+    def test_complete_conversion_workflow(self):
+        """Test complete conversion workflow: PDB/CIF -> numpy/tensor -> PDB/CIF."""
+        import tempfile
+        import shutil
+        from pathlib import Path
+        
+        # Create test output directory
+        output_dir = Path("test_outputs")
+        output_dir.mkdir(exist_ok=True)
+        
+        # Test 1: PDB -> numpy -> PDB, PDB -> tensor -> CIF
+        pdb_file = Path("9kvc.pdb")
+        if pdb_file.exists():
+            logger.info("Testing PDB conversion workflow")
+            
+            # Load PDB
+            protein_from_pdb = load_structure(pdb_file)
+            logger.info(f"Loaded PDB: {protein_from_pdb.n_atoms} atoms, {protein_from_pdb.n_residues} residues")
+            
+            # Convert to numpy and save as PDB
+            numpy_data = protein_from_pdb.to_numpy()
+            pdb_from_numpy = ProteinTensor(
+                coordinates=numpy_data['coordinates'],
+                atom_types=numpy_data['atom_types'],
+                residue_types=numpy_data['residue_types'],
+                chain_ids=numpy_data['chain_ids'],
+                residue_numbers=numpy_data['residue_numbers'],
+                structure=protein_from_pdb._structure
+            )
+            pdb_output_path = output_dir / "from_pdb_via_numpy.pdb"
+            save_structure(pdb_from_numpy, pdb_output_path)
+            logger.info(f"Saved PDB via numpy: {pdb_output_path}")
+            
+            # Convert to torch tensor if available and save as CIF
+            try:
+                torch_data = protein_from_pdb.to_torch()
+                pdb_from_torch = ProteinTensor(
+                    coordinates=torch_data['coordinates'],
+                    atom_types=torch_data['atom_types'],
+                    residue_types=torch_data['residue_types'],
+                    chain_ids=torch_data['chain_ids'],
+                    residue_numbers=torch_data['residue_numbers'],
+                    structure=protein_from_pdb._structure
+                )
+                cif_output_path = output_dir / "from_pdb_via_torch.cif"
+                save_structure(pdb_from_torch, cif_output_path)
+                logger.info(f"Saved CIF via torch: {cif_output_path}")
+                
+                # Verify the torch tensors have correct properties
+                assert torch_data['coordinates'].shape == numpy_data['coordinates'].shape
+                logger.info("Torch tensor shapes verified")
+                
+            except ImportError:
+                logger.warning("PyTorch not available, skipping torch conversion test")
+            
+            # Verify saved files exist and are non-empty
+            assert pdb_output_path.exists() and pdb_output_path.stat().st_size > 0
+            
+        else:
+            pytest.skip("Test PDB file not found")
+        
+        # Test 2: CIF -> numpy -> PDB, CIF -> tensor -> CIF
+        cif_file = Path("9kvc.cif")
+        if cif_file.exists():
+            logger.info("Testing CIF conversion workflow")
+            
+            # Load CIF
+            protein_from_cif = load_structure(cif_file)
+            logger.info(f"Loaded CIF: {protein_from_cif.n_atoms} atoms, {protein_from_cif.n_residues} residues")
+            
+            # Convert to numpy and save as PDB
+            numpy_data_cif = protein_from_cif.to_numpy()
+            cif_from_numpy = ProteinTensor(
+                coordinates=numpy_data_cif['coordinates'],
+                atom_types=numpy_data_cif['atom_types'],
+                residue_types=numpy_data_cif['residue_types'],
+                chain_ids=numpy_data_cif['chain_ids'],
+                residue_numbers=numpy_data_cif['residue_numbers'],
+                structure=protein_from_cif._structure
+            )
+            pdb_from_cif_path = output_dir / "from_cif_via_numpy.pdb"
+            save_structure(cif_from_numpy, pdb_from_cif_path)
+            logger.info(f"Saved PDB from CIF via numpy: {pdb_from_cif_path}")
+            
+            # Convert to torch tensor if available and save as CIF
+            try:
+                torch_data_cif = protein_from_cif.to_torch()
+                cif_from_torch = ProteinTensor(
+                    coordinates=torch_data_cif['coordinates'],
+                    atom_types=torch_data_cif['atom_types'],
+                    residue_types=torch_data_cif['residue_types'],
+                    chain_ids=torch_data_cif['chain_ids'],
+                    residue_numbers=torch_data_cif['residue_numbers'],
+                    structure=protein_from_cif._structure
+                )
+                cif_from_cif_path = output_dir / "from_cif_via_torch.cif"
+                save_structure(cif_from_torch, cif_from_cif_path)
+                logger.info(f"Saved CIF from CIF via torch: {cif_from_cif_path}")
+                
+                # Verify the torch tensors have correct properties
+                assert torch_data_cif['coordinates'].shape == numpy_data_cif['coordinates'].shape
+                logger.info("CIF torch tensor shapes verified")
+                
+            except ImportError:
+                logger.warning("PyTorch not available, skipping CIF torch conversion test")
+            
+            # Verify saved files exist and are non-empty
+            assert pdb_from_cif_path.exists() and pdb_from_cif_path.stat().st_size > 0
+            
+        else:
+            pytest.skip("Test CIF file not found")
+        
+        # Cross-validation: compare data consistency
+        if pdb_file.exists() and cif_file.exists():
+            logger.info("Cross-validating PDB and CIF data consistency")
+            
+            # Both should have similar atom counts (allowing for small differences due to format differences)
+            atom_count_diff = abs(protein_from_pdb.n_atoms - protein_from_cif.n_atoms)
+            residue_count_diff = abs(protein_from_pdb.n_residues - protein_from_cif.n_residues)
+            
+            # Allow some tolerance for format differences
+            assert atom_count_diff <= 100, f"Large atom count difference: {atom_count_diff}"
+            assert residue_count_diff <= 10, f"Large residue count difference: {residue_count_diff}"
+            
+            logger.info(f"Cross-validation passed: atom diff={atom_count_diff}, residue diff={residue_count_diff}")
+        
+        logger.info("Complete conversion workflow test passed")
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"]) 
