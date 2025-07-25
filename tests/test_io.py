@@ -153,7 +153,7 @@ class TestIO:
         from pathlib import Path
         
         # Create test output directory
-        output_dir = Path("test_outputs")
+        output_dir = Path("test_io_outputs")
         output_dir.mkdir(exist_ok=True)
         
         # Test 1: PDB -> numpy -> PDB, PDB -> tensor -> CIF
