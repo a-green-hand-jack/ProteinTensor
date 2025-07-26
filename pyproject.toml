@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
 authors = [
-    {name = "Your Name", email = "your.email@example.com"},
+    {name = "Jieke Wu", email = "jieke.jack.wu@gmail.com"},
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -48,10 +48,10 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/protein-tensor"
+Homepage = "https://github.com/a-green-hand-jack/ProteinTensor"
 Documentation = "https://protein-tensor.readthedocs.io"
-Repository = "https://github.com/yourusername/protein-tensor.git"
-Issues = "https://github.com/yourusername/protein-tensor/issues"
+Repository = "https://github.com/a-green-hand-jack/ProteinTensor.git"
+Issues = "https://github.com/a-green-hand-jack/ProteinTensor/issues"
 
 [tool.hatch.version]
 path = "src/protein_tensor/__init__.py"
