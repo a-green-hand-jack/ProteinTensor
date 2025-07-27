@@ -47,7 +47,10 @@ source .venv/bin/activate
 uv pip install -e /path/to/ProteinTensor
 
 # 或者直接从Git仓库安装
-uv pip install git+git@github.com:a-green-hand-jack/ProteinTensor.git
+# 需要配置 ssh key
+uv pip install git+ssh://git@github.com/a-green-hand-jack/ProteinTensor.git
+# 更推荐,不需要配置 ssh key
+uv pip install git+https://github.com/a-green-hand-jack/ProteinTensor.git
 ```
 
 ### 方法3: 仅安装运行时依赖
